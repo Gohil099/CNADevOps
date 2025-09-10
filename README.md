@@ -1,4 +1,4 @@
-# cnadevops
+# Practical - 4 (CNA DevOps)
 
 To install dependencies:
 

@@ -1,10 +1,13 @@
-name: Bun CI
+name: Bun TypeScript CI
 on:
   push:
     branches: ["main"]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -14,5 +17,19 @@ jobs:
           bun-version: latest
       - name: Install Dependencies
         run: bun install --frozen-lockfile
+      - name: TypeScript Type Check
+        run: bun run --bun tsc --noEmit
       - name: Test with ESLint
         run: bun run lint
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/nodejs-cilab:${{ github.sha }}
